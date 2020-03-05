@@ -9,15 +9,18 @@ const pool = new Pool ({
 
 
 
-let argv = process.argv.slice(2);
+let cohort = `%${process.argv[2]}%`;
+let limit = process.argv[3]
+let values = [cohort, limit]
+const queryString = `
+  SELECT students.id, students.name as student, cohorts.name as cohort
+  FROM STUDENTS
+  LEFT JOIN cohorts ON students.cohort_id = cohorts.id
+  WHERE cohorts.name LIKE $1
+  LIMIT $2
+  `;
 
-pool.query(`
-SELECT students.id, students.name as student, cohorts.name as cohort
-FROM STUDENTS
-LEFT JOIN cohorts ON students.cohort_id = cohorts.id
-WHERE cohorts.name LIKE '%${argv[0]}%'
-LIMIT ${argv[1]}
-`).then(res => {
+pool.query(queryString, values).then(res => {
   for(let item of res.rows) {
     let student = item['student'];
     let studentID = item['id'];
